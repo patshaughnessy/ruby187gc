@@ -1,0 +1,44 @@
+=Garbage Collection patch for Ruby 1.8.7 interpreter
+
+This is a port of the {Ruby 1.8.6 GC Patch}[http://rubyforge.org/tracker/download.php/1814/7062/17676/3291/ruby186gc.patch] over to Ruby 1.8.7. I wrote it based on Ruby 1.8.7 patch level 302, but it will probably patch earlier versions of Ruby 1.8.7 without any trouble. This makes it possible to use RubyProf and other tools with Rails 3 for the first time. To install and use it, run the patch command on your Ruby 1.8.7 source folder. Here's an example using rvm:
+
+  $ rvm install ruby-1.8.7-p302
+  Installing Ruby from source to: /Users/pat/.rvm/rubies/ruby-1.8.7-p302
+  Extracting ruby-1.8.7-p302 ...
+  Configuring ruby-1.8.7-p302, this may take a while depending on your cpu(s)...
+  Compiling ruby-1.8.7-p302, this may take a while, depending on your cpu(s)...
+  etc...
+
+  $ cd ~/.rvm/src/ruby-1.8.7-p302
+  $ git clone https://patshaughnessy@github.com/patshaughnessy/ruby187gc.git
+  $ cat ruby187gc/ruby187gc.patch | patch -p0
+  patching file gc.c
+  patching file intern.h
+
+  $ make
+  gcc -g -O2 -pipe -fno-common    -DRUBY_EXPORT  -I. -I.  -D_XOPEN_SOURCE -D_DARWIN_C_SOURCE   -c array.c
+  gcc -g -O2 -pipe -fno-common    -DRUBY_EXPORT  -I. -I.  -D_XOPEN_SOURCE -D_DARWIN_C_SOURCE   -c bignum.c
+  gcc -g -O2 -pipe -fno-common    -DRUBY_EXPORT  -I. -I.  -D_XOPEN_SOURCE -D_DARWIN_C_SOURCE   -c class.c
+  etc...
+
+  $ make install
+  ./miniruby -I./lib -I.ext/common -I./- -r./ext/purelib.rb  ./instruby.rb --make="make" ...
+  installing binary commands
+  installing command scripts
+  installing library scripts
+  installing headers
+  installing manpages
+  installing extension objects
+  installing extension scripts
+
+Now your version of Ruby has the extra GC support; for example:
+
+  $ rvm ruby-1.8.7-p302
+  $ irb
+  ruby-1.8.7-p302 > ObjectSpace.live_objects
+   => 20948 
+  ruby-1.8.7-p302 > GC.enable_stats
+   => false 
+  ruby-1.8.7-p302 > GC.allocated_size
+   => 3332 
+
